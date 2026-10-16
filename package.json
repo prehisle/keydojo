@@ -1,0 +1,21 @@
+{
+  "name": "keydojo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Plugin-based keyboard shortcut trainer for VSCode, tmux, StarCraft II and more.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "dev": "pnpm --filter @keydojo/web dev",
+    "build": "pnpm --filter @keydojo/web build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}
