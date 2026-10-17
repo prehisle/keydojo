@@ -1,87 +1,77 @@
-import { definePlugin, type ShortcutDef } from '@keydojo/core';
+import { definePlugin } from '@keydojo/core';
+import type { Race } from './gamedata';
+import { parseHotkeysFile } from './hotkeys-file';
+import { buildSc2Pack, LAYOUT_NAMES, type Layout } from './pack';
+
+export { buildSc2Pack, type Layout, type Overrides } from './pack';
+export { parseHotkeysFile } from './hotkeys-file';
+export { sc2KeyToNotation, sc2ValueToNotations } from './sc2-keys';
+export { GAME_DATA } from './gamedata.generated';
+export type { GameData, Race } from './gamedata';
+
+const asRace = (v: string | undefined): Race => (v === 'protoss' || v === 'zerg' ? v : 'terran');
+const asLayout = (v: string | undefined): Layout => (v === 'grid' ? 'grid' : 'standard');
 
 /**
- * StarCraft II, Terran, standard hotkey layout. The context is what you have selected,
- * which decides what the command card shows — that is what the drill prompt says.
- *
- * Protoss / Zerg packs and the Grid layout are welcome contributions.
+ * StarCraft II. Hotkeys come from Blizzard's own game data (see scripts/generate-gamedata.mjs),
+ * so every race and both built-in layouts are exact. The drill context is what you have selected.
  */
-const TERRAN_STANDARD: ShortcutDef[] = [
-  // Global
-  { id: 'select-idle-worker', action: 'Select an idle worker', keys: 'F1', context: 'Global', tags: ['global'] },
-  { id: 'select-army', action: 'Select the whole army', keys: 'F2', context: 'Global', tags: ['global'] },
-  { id: 'base-camera', action: 'Jump the camera to your base', keys: 'Backspace', context: 'Global', tags: ['global'] },
-  { id: 'set-group-1', action: 'Set control group 1', keys: 'Ctrl+1', context: 'Global', tags: ['global', 'control-groups'] },
-  { id: 'add-group-1', action: 'Add selection to control group 1', keys: 'Shift+1', context: 'Global', tags: ['global', 'control-groups'] },
-  { id: 'steal-group-1', action: 'Move selection to control group 1 (steal)', keys: 'Alt+1', context: 'Global', tags: ['global', 'control-groups'], level: 3 },
-
-  // Unit commands
-  { id: 'cmd-move', action: 'Move', keys: 'M', context: 'Any unit', tags: ['commands'] },
-  { id: 'cmd-stop', action: 'Stop', keys: 'S', context: 'Any unit', tags: ['commands'] },
-  { id: 'cmd-hold', action: 'Hold position', keys: 'H', context: 'Any unit', tags: ['commands'] },
-  { id: 'cmd-patrol', action: 'Patrol', keys: 'P', context: 'Any unit', tags: ['commands'] },
-  { id: 'cmd-attack', action: 'Attack move', keys: 'A', context: 'Any unit', tags: ['commands'] },
-
-  // SCV build — basic
-  { id: 'build-command-center', action: 'Build a Command Center', keys: 'B C', context: 'SCV', tags: ['build'] },
-  { id: 'build-supply-depot', action: 'Build a Supply Depot', keys: 'B S', context: 'SCV', tags: ['build'] },
-  { id: 'build-refinery', action: 'Build a Refinery', keys: 'B R', context: 'SCV', tags: ['build'] },
-  { id: 'build-barracks', action: 'Build a Barracks', keys: 'B B', context: 'SCV', tags: ['build'] },
-  { id: 'build-engineering-bay', action: 'Build an Engineering Bay', keys: 'B E', context: 'SCV', tags: ['build'] },
-  { id: 'build-bunker', action: 'Build a Bunker', keys: 'B U', context: 'SCV', tags: ['build'], level: 2 },
-  { id: 'build-missile-turret', action: 'Build a Missile Turret', keys: 'B T', context: 'SCV', tags: ['build'], level: 2 },
-  { id: 'build-sensor-tower', action: 'Build a Sensor Tower', keys: 'B N', context: 'SCV', tags: ['build'], level: 3 },
-  // SCV build — advanced
-  { id: 'build-factory', action: 'Build a Factory', keys: 'V F', context: 'SCV', tags: ['build'] },
-  { id: 'build-starport', action: 'Build a Starport', keys: 'V S', context: 'SCV', tags: ['build'] },
-  { id: 'build-armory', action: 'Build an Armory', keys: 'V A', context: 'SCV', tags: ['build'], level: 2 },
-  { id: 'build-fusion-core', action: 'Build a Fusion Core', keys: 'V C', context: 'SCV', tags: ['build'], level: 3 },
-  { id: 'build-ghost-academy', action: 'Build a Ghost Academy', keys: 'V G', context: 'SCV', tags: ['build'], level: 3 },
-
-  // Command Center / Orbital
-  { id: 'train-scv', action: 'Train an SCV', keys: 'S', context: 'Command Center', tags: ['train'] },
-  { id: 'upgrade-orbital', action: 'Upgrade to Orbital Command', keys: 'O', context: 'Command Center', tags: ['train'] },
-  { id: 'upgrade-planetary', action: 'Upgrade to Planetary Fortress', keys: 'P', context: 'Command Center', tags: ['train'], level: 2 },
-  { id: 'calldown-mule', action: 'Calldown: MULE', keys: 'E', context: 'Orbital Command', tags: ['abilities'] },
-  { id: 'scanner-sweep', action: 'Scanner Sweep', keys: 'C', context: 'Orbital Command', tags: ['abilities'] },
-  { id: 'extra-supplies', action: 'Calldown: Extra Supplies', keys: 'X', context: 'Orbital Command', tags: ['abilities'], level: 3 },
-
-  // Barracks
-  { id: 'train-marine', action: 'Train a Marine', keys: 'A', context: 'Barracks', tags: ['train'] },
-  { id: 'train-reaper', action: 'Train a Reaper', keys: 'R', context: 'Barracks', tags: ['train'] },
-  { id: 'train-marauder', action: 'Train a Marauder', keys: 'D', context: 'Barracks', tags: ['train'] },
-  { id: 'train-ghost', action: 'Train a Ghost', keys: 'G', context: 'Barracks', tags: ['train'], level: 2 },
-  { id: 'barracks-tech-lab', action: 'Build a Tech Lab', keys: 'X', context: 'Barracks', tags: ['addons'] },
-  { id: 'barracks-reactor', action: 'Build a Reactor', keys: 'C', context: 'Barracks', tags: ['addons'] },
-
-  // Factory
-  { id: 'train-hellion', action: 'Build a Hellion', keys: 'E', context: 'Factory', tags: ['train'] },
-  { id: 'train-hellbat', action: 'Build a Hellbat', keys: 'R', context: 'Factory', tags: ['train'], level: 2 },
-  { id: 'train-widow-mine', action: 'Build a Widow Mine', keys: 'D', context: 'Factory', tags: ['train'] },
-  { id: 'train-siege-tank', action: 'Build a Siege Tank', keys: 'S', context: 'Factory', tags: ['train'] },
-  { id: 'train-cyclone', action: 'Build a Cyclone', keys: 'C', context: 'Factory', tags: ['train'], level: 2 },
-  { id: 'train-thor', action: 'Build a Thor', keys: 'T', context: 'Factory', tags: ['train'], level: 2 },
-
-  // Starport
-  { id: 'train-viking', action: 'Build a Viking', keys: 'V', context: 'Starport', tags: ['train'] },
-  { id: 'train-medivac', action: 'Build a Medivac', keys: 'D', context: 'Starport', tags: ['train'] },
-  { id: 'train-liberator', action: 'Build a Liberator', keys: 'N', context: 'Starport', tags: ['train'], level: 2 },
-  { id: 'train-raven', action: 'Build a Raven', keys: 'R', context: 'Starport', tags: ['train'], level: 2 },
-  { id: 'train-banshee', action: 'Build a Banshee', keys: 'E', context: 'Starport', tags: ['train'], level: 2 },
-  { id: 'train-battlecruiser', action: 'Build a Battlecruiser', keys: 'B', context: 'Starport', tags: ['train'], level: 3 },
-
-  // Unit abilities
-  { id: 'stimpack', action: 'Stimpack', keys: 'T', context: 'Marine / Marauder', tags: ['abilities'] },
-  { id: 'siege-mode', action: 'Siege Mode', keys: 'E', context: 'Siege Tank', tags: ['abilities'] },
-  { id: 'unsiege', action: 'Tank Mode (unsiege)', keys: 'D', context: 'Siege Tank (sieged)', tags: ['abilities'] },
-];
-
 export const sc2Plugin = definePlugin({
   id: 'sc2',
   name: 'StarCraft II',
-  description: 'Terran hotkeys (standard layout): build, train, abilities and control groups. Best in Speed mode.',
+  description: 'Command card hotkeys for all three races, Standard or Grid, straight from the game data. Best in Speed mode.',
   homepage: 'https://starcraft2.blizzard.com',
-  buildPack() {
-    return { id: 'sc2', name: 'Terran · Standard', shortcuts: TERRAN_STANDARD };
+  settings: [
+    {
+      key: 'race',
+      label: 'Race',
+      type: 'select',
+      default: 'terran',
+      options: [
+        { value: 'terran', label: 'Terran' },
+        { value: 'protoss', label: 'Protoss' },
+        { value: 'zerg', label: 'Zerg' },
+      ],
+    },
+    {
+      key: 'layout',
+      label: 'Hotkey layout',
+      type: 'select',
+      default: 'standard',
+      options: [
+        { value: 'standard', label: 'Standard' },
+        { value: 'grid', label: 'Grid' },
+      ],
+      description: 'The built-in profile in Options › Hotkeys. Using a custom profile? Import it below.',
+    },
+  ],
+
+  buildPack({ settings }) {
+    return buildSc2Pack({ race: asRace(settings.race), layout: asLayout(settings.layout) });
   },
+
+  importers: [
+    {
+      id: 'sc2hotkeys',
+      label: '.SC2Hotkeys profile',
+      instructions:
+        'Custom profiles live in Documents/StarCraft II/Accounts/<id>/Hotkeys/*.SC2Hotkeys. Pick your race and the layout the profile is based on above first.',
+      accept: '.SC2Hotkeys,.txt',
+      parse(text, { settings }) {
+        const race = asRace(settings.race);
+        const parsed = parseHotkeysFile(text);
+        const layout = parsed.layout ?? asLayout(settings.layout);
+        const pack = buildSc2Pack({ race, layout, overrides: parsed.overrides });
+        const warnings: string[] = [];
+        if (parsed.entries === 0) {
+          warnings.push('No hotkeys found — is this an .SC2Hotkeys file?');
+          return { pack: { ...pack, shortcuts: [] }, warnings };
+        }
+        warnings.push(
+          `Applied ${parsed.entries} custom hotkeys on top of ${LAYOUT_NAMES[layout]}${parsed.layout ? ' (from the file)' : ''}. Switched race? Import again.`,
+        );
+        return { pack: { ...pack, name: `${pack.name} · custom` }, warnings };
+      },
+    },
+  ],
 });

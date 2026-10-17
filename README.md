@@ -37,7 +37,7 @@ packages/
   core/            key model, matcher, spaced repetition, drill engine, plugin API (no DOM)
   plugin-vscode/   VS Code defaults + keybindings.json importer
   plugin-tmux/     tmux defaults, prefix setting + `tmux list-keys` importer
-  plugin-sc2/      StarCraft II Terran (standard layout)
+  plugin-sc2/      StarCraft II, all races, Standard/Grid, generated from game data + `.SC2Hotkeys` importer
 apps/
   web/             React + Vite UI
 ```
@@ -45,7 +45,8 @@ apps/
 ## Roadmap
 
 - [ ] Desktop app (Tauri) wrapping `apps/web`, file-backed storage
-- [ ] StarCraft II: Protoss / Zerg, Grid layout, `.SC2Hotkeys` importer, build-order scenarios
+- [x] StarCraft II: all three races, Grid layout, `.SC2Hotkeys` importer
+- [ ] StarCraft II: build-order drills
 - [ ] Scenario drills (multi-step tasks, e.g. "rename a symbol across files")
 - [ ] More plugins: Vim, JetBrains, Photoshop, Blender, Figma, browser DevTools…
 - [ ] i18n of the UI and packs

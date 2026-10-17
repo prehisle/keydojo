@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "type": "module",
+  "scripts": { "gen": "node scripts/generate-gamedata.mjs" },
   "dependencies": { "@keydojo/core": "workspace:*" },
   "exports": { ".": "./src/index.ts" }
 }
