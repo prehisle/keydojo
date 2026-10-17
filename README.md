@@ -7,6 +7,7 @@
 - **Your bindings, not just defaults.** Import your VS Code `keybindings.json` or `tmux list-keys` output and drill what you actually use.
 - **Spaced repetition.** Smart review schedules each shortcut based on whether you got it right *and how fast* — hesitation counts.
 - **Speed runs.** Race the clock; great for StarCraft hotkeys.
+- **Scenarios.** Timed multi-step drills with splits and personal bests — e.g. StarCraft II build orders for all three races.
 - **Real key sequences.** Combos (`Ctrl+Shift+P`), chords (`Ctrl+K Ctrl+S`), prefix keys (`Ctrl+B %`), and rapid series (`B B`) are all first-class.
 - **Plugins are mostly data.** Adding an app is usually one file of shortcut definitions.
 
@@ -46,8 +47,8 @@ apps/
 
 - [ ] Desktop app (Tauri) wrapping `apps/web`, file-backed storage
 - [x] StarCraft II: all three races, Grid layout, `.SC2Hotkeys` importer
-- [ ] StarCraft II: build-order drills
-- [ ] Scenario drills (multi-step tasks, e.g. "rename a symbol across files")
+- [x] StarCraft II: build-order drills
+- [ ] Scenario drills for editors (e.g. "rename a symbol across files")
 - [ ] More plugins: Vim, JetBrains, Photoshop, Blender, Figma, browser DevTools…
 - [ ] i18n of the UI and packs
 

@@ -1,5 +1,6 @@
 import type { Platform } from './keys';
 import type { ShortcutPackDef } from './pack';
+import type { ScenarioDef } from './scenario';
 
 /**
  * A plugin adds training for one application. Most plugins are pure data: a default
@@ -19,6 +20,11 @@ export interface ShortcutPlugin {
   /** Build the default pack, applying settings. */
   buildPack(ctx: PluginContext): ShortcutPackDef;
   importers?: ConfigImporter[];
+  /**
+   * Timed multi-step drills (e.g. build orders). Steps reference shortcut ids from the pack;
+   * whatever bindings are active — default or imported — are the ones practised.
+   */
+  scenarios?(ctx: PluginContext): ScenarioDef[];
 }
 
 export interface PluginContext {

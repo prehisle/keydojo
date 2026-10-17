@@ -1,6 +1,7 @@
 import type { Platform } from '@keydojo/core';
 import { useEffect, useState } from 'react';
 import { DrillView } from './components/DrillView';
+import { ScenarioView } from './components/ScenarioView';
 import { Home } from './components/Home';
 import { PluginPage } from './components/PluginPage';
 import { canLockKeyboard, currentCaptureEnv, detectPlatform, enterKeyboardLock } from './platform';
@@ -59,6 +60,9 @@ export function App() {
         )}
         {route.name === 'plugin' && plugin && <PluginPage key={plugin.id + platform + env} plugin={plugin} platform={platform} env={env} />}
         {route.name === 'drill' && plugin && <DrillView key={plugin.id + platform} plugin={plugin} platform={platform} env={env} />}
+        {route.name === 'scenario' && plugin && (
+          <ScenarioView key={plugin.id + platform + route.scenarioId} plugin={plugin} scenarioId={route.scenarioId} platform={platform} env={env} />
+        )}
       </main>
       <footer className="muted small center">
         Open source · <a href="https://github.com/prehisle/keydojo">GitHub</a>

@@ -5,3 +5,4 @@ export * from './capture';
 export * from './srs';
 export * from './drill';
 export * from './plugin';
+export * from './scenario';

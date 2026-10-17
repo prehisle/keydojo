@@ -1,4 +1,4 @@
-import type { DrillMode, Platform, ProgressMap, SettingValues, ShortcutPackDef } from '@keydojo/core';
+import type { DrillMode, Platform, ProgressMap, ScenarioRecord, SettingValues, ShortcutPackDef } from '@keydojo/core';
 
 /**
  * Persistence. Everything goes through `kv` so the desktop build can swap localStorage
@@ -63,4 +63,7 @@ export const store = {
 
   progress: (pluginId: string) => read<ProgressMap>(`progress:${pluginId}`, {}),
   setProgress: (pluginId: string, v: ProgressMap) => write(`progress:${pluginId}`, v),
+
+  scenarioRecords: (pluginId: string) => read<Record<string, ScenarioRecord>>(`scenarios:${pluginId}`, {}),
+  setScenarioRecords: (pluginId: string, v: Record<string, ScenarioRecord>) => write(`scenarios:${pluginId}`, v),
 };

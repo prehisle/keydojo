@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react';
 export type Route =
   | { name: 'home' }
   | { name: 'plugin'; pluginId: string }
-  | { name: 'drill'; pluginId: string };
+  | { name: 'drill'; pluginId: string }
+  | { name: 'scenario'; pluginId: string; scenarioId: string };
 
 function parse(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   if (parts[0] === 'p' && parts[1]) {
+    if (parts[2] === 's' && parts[3]) return { name: 'scenario', pluginId: parts[1], scenarioId: decodeURIComponent(parts[3]) };
     return parts[2] === 'drill' ? { name: 'drill', pluginId: parts[1] } : { name: 'plugin', pluginId: parts[1] };
   }
   return { name: 'home' };
@@ -21,6 +23,8 @@ export function href(route: Route): string {
       return `#/p/${route.pluginId}`;
     case 'drill':
       return `#/p/${route.pluginId}/drill`;
+    case 'scenario':
+      return `#/p/${route.pluginId}/s/${encodeURIComponent(route.scenarioId)}`;
   }
 }
 

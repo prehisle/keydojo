@@ -1,10 +1,12 @@
 import { definePlugin } from '@keydojo/core';
 import type { Race } from './gamedata';
+import { BUILD_ORDERS } from './build-orders';
 import { parseHotkeysFile } from './hotkeys-file';
 import { buildSc2Pack, LAYOUT_NAMES, type Layout } from './pack';
 
 export { buildSc2Pack, type Layout, type Overrides } from './pack';
 export { parseHotkeysFile } from './hotkeys-file';
+export { BUILD_ORDERS } from './build-orders';
 export { sc2KeyToNotation, sc2ValueToNotations } from './sc2-keys';
 export { GAME_DATA } from './gamedata.generated';
 export type { GameData, Race } from './gamedata';
@@ -49,6 +51,8 @@ export const sc2Plugin = definePlugin({
   buildPack({ settings }) {
     return buildSc2Pack({ race: asRace(settings.race), layout: asLayout(settings.layout) });
   },
+
+  scenarios: ({ settings }) => BUILD_ORDERS[asRace(settings.race)],
 
   importers: [
     {

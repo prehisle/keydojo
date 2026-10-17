@@ -4,6 +4,7 @@ import {
   isCapturable,
   type CaptureEnv,
   type PackIssue,
+  type ScenarioDef,
   type Platform,
   type ProgressMap,
   type SettingValues,
@@ -26,6 +27,8 @@ export interface PluginData {
   /** Set when the plugin could not build its pack, e.g. an invalid setting. */
   error: string | null;
   progress: ProgressMap;
+  /** Timed multi-step drills offered by the plugin for the current settings. */
+  scenarios: ScenarioDef[];
   setProgress(v: ProgressMap): void;
   isPracticable(s: Shortcut): boolean;
 }
@@ -38,13 +41,15 @@ export function usePluginData(plugin: ShortcutPlugin, platform: Platform, env: C
 
   const built = useMemo(() => {
     let baseDef: ShortcutPackDef;
+    let scenarios: ScenarioDef[];
     try {
       baseDef = plugin.buildPack({ platform, settings });
+      scenarios = plugin.scenarios?.({ platform, settings }) ?? [];
     } catch (err) {
-      return { baseDef: null, shortcuts: [], issues: [], error: (err as Error).message };
+      return { baseDef: null, shortcuts: [], issues: [], scenarios: [], error: (err as Error).message };
     }
     const { pack, issues } = compilePack(imported?.pack ?? baseDef, platform);
-    return { baseDef, shortcuts: pack.shortcuts, issues, error: null };
+    return { baseDef, shortcuts: pack.shortcuts, issues, scenarios, error: null };
   }, [plugin, platform, settings, imported]);
 
   const setSettings = useCallback(

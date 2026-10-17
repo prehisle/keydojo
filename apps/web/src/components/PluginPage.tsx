@@ -1,9 +1,10 @@
 import { masteryOf, type CaptureEnv, type Mastery, type Platform, type ShortcutPlugin } from '@keydojo/core';
 import { useMemo, useState } from 'react';
-import { navigate } from '../router';
+import { href, navigate } from '../router';
 import { store, type DrillPrefs } from '../storage';
 import { usePluginData } from '../usePluginData';
 import { ImportPanel } from './ImportPanel';
+import { formatMs } from './ScenarioView';
 import { BindingsCaps } from './KeyCaps';
 
 export const NEW_PER_SESSION = 5;
@@ -24,6 +25,8 @@ export function PluginPage({ plugin, platform, env }: Props) {
     store.setDrillPrefs(plugin.id, next);
     setPrefsState(next);
   };
+
+  const [records] = useState(() => store.scenarioRecords(plugin.id));
 
   const allTags = useMemo(() => [...new Set(data.shortcuts.flatMap((s) => s.tags))].sort(), [data.shortcuts]);
   const selected = data.shortcuts.filter(
@@ -123,6 +126,31 @@ export function PluginPage({ plugin, platform, env }: Props) {
               </p>
             )}
           </section>
+
+          {data.scenarios.length > 0 && (
+            <section className="panel">
+              <h3>Scenarios</h3>
+              <p className="muted small">A fixed series of steps against the clock. Uses your current bindings.</p>
+              <ul className="scenario-list">
+                {data.scenarios.map((sc) => {
+                  const rec = records[sc.id];
+                  const steps = sc.steps.reduce((n, st) => n + (st.times ?? 1), 0);
+                  return (
+                    <li key={sc.id}>
+                      <a href={href({ name: 'scenario', pluginId: plugin.id, scenarioId: sc.id })}>
+                        <strong>{sc.name}</strong>
+                        <span className="muted small">
+                          {steps} steps{rec ? ` · best ${formatMs(rec.bestMs)}` : ''}
+                          {rec?.bestCleanMs != null && rec.bestCleanMs !== rec.bestMs ? ` · clean ${formatMs(rec.bestCleanMs)}` : ''}
+                        </span>
+                      </a>
+                      {sc.description && <p className="muted small">{sc.description}</p>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
 
           {plugin.settings && plugin.settings.length > 0 && (
             <section className="panel">

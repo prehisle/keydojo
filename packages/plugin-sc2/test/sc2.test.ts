@@ -1,4 +1,4 @@
-import { compilePack, parseSequence, type ShortcutPackDef } from '@keydojo/core';
+import { compilePack, parseSequence, resolveScenario, type ShortcutPackDef } from '@keydojo/core';
 import { describe, expect, it } from 'vitest';
 import { buildSc2Pack, parseHotkeysFile, sc2KeyToNotation, sc2Plugin, sc2ValueToNotations, type Layout, type Race } from '../src';
 
@@ -107,5 +107,19 @@ SupplyDepot=T
     expect(result.warnings[0]).toMatch(/Applied 5 custom hotkeys on top of Grid/);
     expect(keysOf(result.pack, 'terran.barracks.reaper')).toEqual(seq('W'));
     expect(importer.parse('hello', { platform: 'windows', settings, base }).pack.shortcuts).toEqual([]);
+  });
+});
+
+describe('build orders', () => {
+  it.each(['terran', 'protoss', 'zerg'] as Race[])('%s build orders only use existing shortcuts', (race) => {
+    const settings = { race, layout: 'standard' };
+    const shortcuts = compilePack(sc2Plugin.buildPack({ platform: 'windows', settings }), 'windows').pack.shortcuts;
+    const scenarios = sc2Plugin.scenarios!({ platform: 'windows', settings });
+    expect(scenarios.length).toBeGreaterThanOrEqual(3);
+    for (const s of scenarios) {
+      const { steps, missing } = resolveScenario(s, shortcuts);
+      expect(missing, s.id).toEqual([]);
+      expect(steps.length).toBeGreaterThanOrEqual(10);
+    }
   });
 });
