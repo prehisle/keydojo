@@ -15,6 +15,7 @@ export const zh: UIMessages = {
   practised: (n) => `已练习 ${n} 个快捷键`,
   notStarted: '尚未开始',
   missingApp: '没有你要的应用？插件基本只是数据，参见',
+  fullStop: '。',
 
   mastery: { new: '新', learning: '学习中', young: '熟悉', mature: '已掌握' },
   practise: '练习',

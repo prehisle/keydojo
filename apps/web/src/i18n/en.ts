@@ -18,6 +18,7 @@ export const en = {
   practised: (n: number) => `${n} ${plural(n, 'shortcut', 'shortcuts')} practised`,
   notStarted: 'Not started',
   missingApp: 'Missing an app? Plugins are mostly data — see',
+  fullStop: '.',
 
   mastery: { new: 'New', learning: 'Learning', young: 'Familiar', mature: 'Mastered' } satisfies Record<Mastery, string>,
   practise: 'Practise',

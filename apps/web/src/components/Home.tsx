@@ -26,7 +26,8 @@ export function Home() {
         })}
       </div>
       <p className="muted center">
-        {m.missingApp} <code>CONTRIBUTING.md</code>.
+        {m.missingApp} <code>CONTRIBUTING.md</code>
+        {m.fullStop}
       </p>
     </div>
   );
