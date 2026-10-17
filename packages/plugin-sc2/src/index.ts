@@ -33,6 +33,8 @@ export const sc2Plugin = definePlugin({
   description: 'Command card hotkeys for all three races, Standard or Grid, straight from the game data. Best in Speed mode.',
   homepage: 'https://starcraft2.blizzard.com',
   messages: { zh: buildZhMessages(gameDataNames()) },
+  // Shift+1 adds to control group 1; it should not read as `!`.
+  keyLabels: { shiftedSymbols: false },
   settings: [
     {
       key: 'race',

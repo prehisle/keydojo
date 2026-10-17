@@ -1,10 +1,15 @@
-import { sequenceId, strokeParts, type KeySequence, type KeyStroke, type Platform } from '@keydojo/core';
+import { sequenceId, strokeParts, type KeySequence, type KeyStroke, type LabelOptions, type Platform } from '@keydojo/core';
+import { createContext, useContext } from 'react';
 import { useI18n } from '../i18n';
 
+/** Labelling rules of the plugin being shown. */
+export const KeyLabels = createContext<LabelOptions>({});
+
 export function StrokeCaps({ stroke, platform }: { stroke: KeyStroke; platform: Platform }) {
+  const labels = useContext(KeyLabels);
   return (
     <span className="stroke">
-      {strokeParts(stroke, platform).map((part, i) => (
+      {strokeParts(stroke, platform, labels).map((part, i) => (
         <kbd key={i}>{part}</kbd>
       ))}
     </span>

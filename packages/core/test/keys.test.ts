@@ -57,6 +57,9 @@ describe('sequences', () => {
     const seq = parseSequence('Mod+Shift+P', 'mac');
     expect(formatSequence(seq, 'mac')).toBe('⇧⌘P');
     expect(formatSequence(parseSequence('Ctrl+B %', 'linux'), 'linux')).toBe('Ctrl+B %');
+    // Games label the key, not the character it types.
+    expect(formatSequence(parseSequence('Shift+1', 'windows'), 'windows')).toBe('!');
+    expect(formatSequence(parseSequence('Shift+1', 'windows'), 'windows', { shiftedSymbols: false })).toBe('Shift+1');
   });
 });
 

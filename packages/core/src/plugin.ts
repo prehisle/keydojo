@@ -1,4 +1,4 @@
-import type { Platform } from './keys';
+import type { LabelOptions, Platform } from './keys';
 import type { ShortcutPackDef } from './pack';
 import type { ScenarioDef } from './scenario';
 
@@ -31,6 +31,8 @@ export interface ShortcutPlugin {
    * stored packs and progress stay language-independent. Missing entries fall back to English.
    */
   messages?: Partial<Record<Locale, Messages>>;
+  /** How key caps are labelled, e.g. `{ shiftedSymbols: false }` to show Shift+1 rather than `!`. */
+  keyLabels?: LabelOptions;
 }
 
 /** UI languages. English is the source language of all plugin text. */

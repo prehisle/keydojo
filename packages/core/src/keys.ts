@@ -268,18 +268,25 @@ const PC_MOD_LABELS: Record<Platform, Record<Modifier, string>> = {
 };
 
 /** Split a stroke into display parts, e.g. ["Ctrl", "Shift", "P"]. */
-export function strokeParts(s: KeyStroke, platform: Platform): string[] {
-  // Show `Shift+Digit5` as `%` — that is how tmux and most docs write it.
+export interface LabelOptions {
+  /**
+   * Show `Shift+Digit5` as `%` — that is how tmux and most docs write it (default). Games label
+   * the key instead: StarCraft's "Shift+1" adds to control group 1, it doesn't type `!`.
+   */
+  shiftedSymbols?: boolean;
+}
+
+export function strokeParts(s: KeyStroke, platform: Platform, { shiftedSymbols = true }: LabelOptions = {}): string[] {
   const symbol = SHIFTED_LABELS[s.code];
-  if (symbol && s.mods.length === 1 && s.mods[0] === 'Shift') return [symbol];
+  if (shiftedSymbols && symbol && s.mods.length === 1 && s.mods[0] === 'Shift') return [symbol];
   const labels = PC_MOD_LABELS[platform];
   return [...s.mods.map((m) => labels[m]), codeLabel(s.code)];
 }
 
-export function formatStroke(s: KeyStroke, platform: Platform): string {
-  return strokeParts(s, platform).join(platform === 'mac' ? '' : '+');
+export function formatStroke(s: KeyStroke, platform: Platform, opts?: LabelOptions): string {
+  return strokeParts(s, platform, opts).join(platform === 'mac' ? '' : '+');
 }
 
-export function formatSequence(seq: KeySequence, platform: Platform): string {
-  return seq.map((s) => formatStroke(s, platform)).join(' ');
+export function formatSequence(seq: KeySequence, platform: Platform, opts?: LabelOptions): string {
+  return seq.map((s) => formatStroke(s, platform, opts)).join(' ');
 }

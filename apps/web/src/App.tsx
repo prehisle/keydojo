@@ -1,6 +1,7 @@
 import { LOCALES, type Locale, type Platform } from '@keydojo/core';
 import { useEffect, useState } from 'react';
 import { DrillView } from './components/DrillView';
+import { KeyLabels } from './components/KeyCaps';
 import { ScenarioView } from './components/ScenarioView';
 import { Home } from './components/Home';
 import { PluginPage } from './components/PluginPage';
@@ -60,18 +61,20 @@ export function App() {
         </div>
       </nav>
       <main>
-        {route.name === 'home' && <Home />}
-        {route.name !== 'home' && !plugin && (
-          <div className="page center">
-            <h2>{m.unknownPlugin}</h2>
-            <a href={href({ name: 'home' })}>{m.backHome}</a>
-          </div>
-        )}
-        {route.name === 'plugin' && plugin && <PluginPage key={plugin.id + platform + env} plugin={plugin} platform={platform} env={env} />}
-        {route.name === 'drill' && plugin && <DrillView key={plugin.id + platform} plugin={plugin} platform={platform} env={env} />}
-        {route.name === 'scenario' && plugin && (
-          <ScenarioView key={plugin.id + platform + route.scenarioId} plugin={plugin} scenarioId={route.scenarioId} platform={platform} env={env} />
-        )}
+        <KeyLabels.Provider value={plugin?.keyLabels ?? {}}>
+          {route.name === 'home' && <Home />}
+          {route.name !== 'home' && !plugin && (
+            <div className="page center">
+              <h2>{m.unknownPlugin}</h2>
+              <a href={href({ name: 'home' })}>{m.backHome}</a>
+            </div>
+          )}
+          {route.name === 'plugin' && plugin && <PluginPage key={plugin.id + platform + env} plugin={plugin} platform={platform} env={env} />}
+          {route.name === 'drill' && plugin && <DrillView key={plugin.id + platform} plugin={plugin} platform={platform} env={env} />}
+          {route.name === 'scenario' && plugin && (
+            <ScenarioView key={plugin.id + platform + route.scenarioId} plugin={plugin} scenarioId={route.scenarioId} platform={platform} env={env} />
+          )}
+        </KeyLabels.Provider>
       </main>
       <footer className="muted small center">
         {m.openSource} · <a href="https://github.com/prehisle/keydojo">GitHub</a>
