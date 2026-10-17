@@ -1,0 +1,70 @@
+<!doctype html>
+<!-- Social preview card. Rendered at 1200×630 to apps/web/public/og-{en,zh}.png by scripts/og-image.mjs. -->
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    background: radial-gradient(circle at 85% 20%, #1c2a44 0, #0f1115 55%);
+    color: #e6e8ec; font-family: Inter, 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+    display: flex; padding: 64px 72px; gap: 48px;
+  }
+  .left { flex: 1; display: flex; flex-direction: column; }
+  .logo { font-size: 34px; font-weight: 700; color: #6ea8fe; margin-bottom: 36px; }
+  h1 { white-space: pre-line; font-size: 58px; line-height: 1.12; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 36px; }
+  ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px; font-size: 25px; color: #b7bfcd; }
+  li::before { content: '▸ '; color: #6ea8fe; }
+  .url { margin-top: auto; font-size: 22px; color: #8b93a3; }
+  .right { width: 400px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+  .caption { font-size: 18px; color: #8b93a3; text-align: center; margin-bottom: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .key {
+    height: 104px; border-radius: 12px; background: #1f232c; border: 1px solid #2a2f3a; border-bottom-width: 5px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .key b { font-size: 34px; font-family: ui-monospace, 'JetBrains Mono', monospace; }
+  .key span { font-size: 16px; color: #8b93a3; }
+  .key.hit { border-color: #4ade80; background: #18301f; }
+  .key.hit span { color: #b6f0c8; }
+  .combo { margin-top: 18px; display: flex; gap: 10px; justify-content: center; align-items: center; font-size: 22px; color: #8b93a3; }
+  .combo kbd { white-space: nowrap; font-family: ui-monospace, monospace; font-size: 22px; padding: 6px 14px; border-radius: 8px; background: #1f232c; border: 1px solid #2a2f3a; color: #e6e8ec; }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="logo">⌨️ KeyDojo</div>
+    <h1 id="title"></h1>
+    <ul id="points"></ul>
+    <div class="url">prehisle.github.io/keydojo</div>
+  </div>
+  <div class="right">
+    <div class="caption" id="caption"></div>
+    <div class="grid" id="grid"></div>
+    <div class="combo"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> · <kbd>C-b</kbd> <kbd>%</kbd></div>
+  </div>
+<script>
+  const T = {
+    en: {
+      title: 'Train your shortcuts into muscle memory.',
+      points: ['Import your own keybindings', 'StarCraft II · all races · Grid', 'VS Code · tmux · build-order drills'],
+      caption: 'SCV › Build (B) · Grid layout',
+      keys: ['Command C.', 'Refinery', 'Depot', 'Barracks', 'Eng. Bay', '', 'Bunker', 'Turret', 'Sensor'],
+    },
+    zh: {
+      title: '把快捷键\n练成肌肉记忆。',
+      points: ['导入你自己的键位配置', '星际争霸 II · 三族 · 网格键位', 'VS Code · tmux · 建造顺序演练'],
+      caption: 'SCV › 建造 (B) · 网格键位',
+      keys: ['指挥中心', '精炼厂', '补给站', '兵营', '工程站', '', '地堡', '导弹塔', '感应塔'],
+    },
+  };
+  const t = T[new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en'];
+  document.getElementById('title').textContent = t.title;
+  document.getElementById('caption').textContent = t.caption;
+  document.getElementById('points').innerHTML = t.points.map((p) => `<li>${p}</li>`).join('');
+  document.getElementById('grid').innerHTML = 'QWEASDZXC'.split('').map((k, i) =>
+    `<div class="key${i === 3 ? ' hit' : ''}"><b>${k}</b><span>${t.keys[i]}</span></div>`).join('');
+</script>
+</body>
+</html>

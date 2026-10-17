@@ -28,6 +28,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+        env:
+          # Repo variable (Settings › Secrets and variables › Actions › Variables); unset = no analytics.
+          VITE_GOATCOUNTER: ${{ vars.GOATCOUNTER_CODE }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

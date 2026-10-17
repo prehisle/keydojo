@@ -12,6 +12,14 @@ export function Home() {
         <h1>{m.heroTitle}</h1>
         <p>{m.heroText}</p>
       </section>
+      <ul className="features">
+        {m.features.map(([title, text]) => (
+          <li key={title}>
+            <strong>{title}</strong>
+            <span className="muted">{text}</span>
+          </li>
+        ))}
+      </ul>
       <div className="plugin-grid">
         {plugins.map((plugin) => {
           const progress = store.progress(plugin.id);

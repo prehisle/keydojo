@@ -77,7 +77,8 @@ export function App() {
         </KeyLabels.Provider>
       </main>
       <footer className="muted small center">
-        {m.openSource} · <a href="https://github.com/prehisle/keydojo">GitHub</a>
+        {m.openSource} · <a href="https://github.com/prehisle/keydojo">GitHub</a> ·{' '}
+        <a href="https://github.com/prehisle/keydojo/issues">{m.feedback}</a>
       </footer>
     </>
   );

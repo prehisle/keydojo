@@ -61,13 +61,15 @@ textarea { width: 100%; font-family: ui-monospace, monospace; font-size: 0.85rem
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border);
 }
-.logo { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+.logo { font-weight: 700; font-size: 1.1rem; color: var(--text); white-space: nowrap; }
 footer { padding: 1rem; }
 
 .page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
-.hero { text-align: center; margin: 2rem 0 3rem; }
-.hero h1 { font-size: 2.2rem; }
+.hero { text-align: center; margin: 2rem 0; }
+.hero h1 { font-size: 2.2rem; text-wrap: balance; }
 .hero p { color: var(--muted); font-size: 1.1rem; }
+.features { list-style: none; padding: 0; margin: 0 0 2.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem 2rem; }
+.features li { display: flex; flex-direction: column; gap: 0.3rem; border-left: 2px solid var(--accent); padding-left: 0.9rem; }
 
 .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
 .plugin-card {

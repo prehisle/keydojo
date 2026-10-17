@@ -12,9 +12,15 @@ export const en = {
   unknownPlugin: 'Unknown plugin',
   backHome: 'Back home',
   openSource: 'Open source',
+  feedback: 'Feedback & ideas',
 
   heroTitle: 'Train your shortcuts into muscle memory.',
-  heroText: 'Pick an app, optionally import your own config, and drill with spaced repetition or against the clock.',
+  heroText: 'Free, open source, runs in your browser. Drill with spaced repetition or against the clock.',
+  features: [
+    ['Your bindings, not ours', 'Import your keybindings.json, tmux list-keys or .SC2Hotkeys file and practise what you actually use.'],
+    ['StarCraft II, Standard or Grid', 'Every command card for all three races, generated from Blizzard’s game data.'],
+    ['Timed scenarios', 'Run SC2 build orders keystroke by keystroke and chase your personal best.'],
+  ] as [string, string][],
   practised: (n: number) => `${n} ${plural(n, 'shortcut', 'shortcuts')} practised`,
   notStarted: 'Not started',
   missingApp: 'Missing an app? Plugins are mostly data — see',

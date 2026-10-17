@@ -9,9 +9,15 @@ export const zh: UIMessages = {
   unknownPlugin: '未知插件',
   backHome: '返回首页',
   openSource: '开源项目',
+  feedback: '反馈与建议',
 
   heroTitle: '把快捷键练成肌肉记忆。',
-  heroText: '选一个应用，可以导入你自己的配置，然后用间隔重复或计时模式来练习。',
+  heroText: '免费、开源，打开浏览器就能练。间隔重复记忆，或者计时挑战。',
+  features: [
+    ['练你自己的键位', '导入你的 keybindings.json、tmux list-keys 或 .SC2Hotkeys 文件，练你真正在用的快捷键。'],
+    ['星际争霸 II：标准 / 网格', '三族全部指令卡，直接从暴雪游戏数据生成。'],
+    ['计时场景', '按建造顺序逐键演练，刷新个人最佳成绩。'],
+  ],
   practised: (n) => `已练习 ${n} 个快捷键`,
   notStarted: '尚未开始',
   missingApp: '没有你要的应用？插件基本只是数据，参见',
