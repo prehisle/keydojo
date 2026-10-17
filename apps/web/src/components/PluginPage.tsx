@@ -1,5 +1,6 @@
 import { masteryOf, type CaptureEnv, type Mastery, type Platform, type ShortcutPlugin } from '@keydojo/core';
 import { useMemo, useState } from 'react';
+import { useI18n } from '../i18n';
 import { href, navigate } from '../router';
 import { store, type DrillPrefs } from '../storage';
 import { usePluginData } from '../usePluginData';
@@ -9,8 +10,6 @@ import { BindingsCaps } from './KeyCaps';
 
 export const NEW_PER_SESSION = 5;
 
-const MASTERY_LABEL: Record<Mastery, string> = { new: 'New', learning: 'Learning', young: 'Familiar', mature: 'Mastered' };
-
 interface Props {
   plugin: ShortcutPlugin;
   platform: Platform;
@@ -18,6 +17,8 @@ interface Props {
 }
 
 export function PluginPage({ plugin, platform, env }: Props) {
+  const { m, p } = useI18n();
+  const tr = (text: string) => p(plugin, text);
   const data = usePluginData(plugin, platform, env);
   const [prefs, setPrefsState] = useState(() => store.drillPrefs(plugin.id));
   const setPrefs = (patch: Partial<DrillPrefs>) => {
@@ -39,8 +40,8 @@ export function PluginPage({ plugin, platform, env }: Props) {
   const newCount = practicable.filter((s) => !data.progress[s.id]).length;
   const startLabel =
     prefs.mode === 'smart'
-      ? `Start · ${dueCount} due · ${Math.min(newCount, NEW_PER_SESSION)} new`
-      : `Start · ${Math.min(prefs.size, practicable.length)} of ${practicable.length} shortcuts`;
+      ? m.startSmart(dueCount, Math.min(newCount, NEW_PER_SESSION))
+      : m.startSpeed(Math.min(prefs.size, practicable.length), practicable.length);
 
   const counts = { new: 0, learning: 0, young: 0, mature: 0 } as Record<Mastery, number>;
   for (const s of data.shortcuts) counts[masteryOf(data.progress[s.id])]++;
@@ -51,12 +52,12 @@ export function PluginPage({ plugin, platform, env }: Props) {
   return (
     <div className="page">
       <header className="plugin-header">
-        <h1>{plugin.name}</h1>
-        <p>{plugin.description}</p>
+        <h1>{tr(plugin.name)}</h1>
+        <p>{tr(plugin.description)}</p>
         <div className="mastery-bar">
-          {(Object.keys(counts) as Mastery[]).map((m) => (
-            <span key={m} className={`badge ${m}`}>
-              {MASTERY_LABEL[m]} {counts[m]}
+          {(Object.keys(counts) as Mastery[]).map((k) => (
+            <span key={k} className={`badge ${k}`}>
+              {m.mastery[k]} {counts[k]}
             </span>
           ))}
         </div>
@@ -65,25 +66,25 @@ export function PluginPage({ plugin, platform, env }: Props) {
       <div className="columns">
         <div>
           <section className="panel">
-            <h3>Practise</h3>
+            <h3>{m.practise}</h3>
             <div className="field">
-              <span>Mode</span>
+              <span>{m.mode}</span>
               <div className="segmented">
                 <button className={prefs.mode === 'smart' ? 'active' : ''} onClick={() => setPrefs({ mode: 'smart' })}>
-                  Smart review
+                  {m.smartReview}
                 </button>
                 <button className={prefs.mode === 'speed' ? 'active' : ''} onClick={() => setPrefs({ mode: 'speed' })}>
-                  Speed run
+                  {m.speedRun}
                 </button>
               </div>
             </div>
             <p className="muted small">
               {prefs.mode === 'smart'
-                ? 'Spaced repetition: due shortcuts first, a few new ones each session; misses come back.'
-                : 'Random shortcuts against the clock. Measures reaction time.'}
+                ? m.smartHelp
+                : m.speedHelp}
             </p>
             <div className="field">
-              <span>Length</span>
+              <span>{m.length}</span>
               <div className="segmented">
                 {[10, 20, 40].map((n) => (
                   <button key={n} className={prefs.size === n ? 'active' : ''} onClick={() => setPrefs({ size: n })}>
@@ -93,21 +94,21 @@ export function PluginPage({ plugin, platform, env }: Props) {
               </div>
             </div>
             <div className="field">
-              <span>Difficulty</span>
+              <span>{m.difficulty}</span>
               <div className="segmented">
                 {([1, 2, 3] as const).map((n) => (
                   <button key={n} className={prefs.maxLevel === n ? 'active' : ''} onClick={() => setPrefs({ maxLevel: n })}>
-                    {['Basics', '+ Common', 'Everything'][n - 1]}
+                    {m.levels[n - 1]}
                   </button>
                 ))}
               </div>
             </div>
             <div className="field">
-              <span>Topics</span>
+              <span>{m.topics}</span>
               <div className="chips">
                 {allTags.map((t) => (
                   <button key={t} className={`chip ${prefs.tags.includes(t) ? 'active' : ''}`} onClick={() => toggleTag(t)}>
-                    {t}
+                    {tr(t)}
                   </button>
                 ))}
               </div>
@@ -120,17 +121,14 @@ export function PluginPage({ plugin, platform, env }: Props) {
               {startLabel}
             </button>
             {blocked > 0 && (
-              <p className="muted small">
-                {blocked} shortcut{blocked > 1 ? 's are' : ' is'} reserved by the browser and skipped. Use fullscreen
-                mode (top right) in Chrome/Edge, or the desktop app, to practise them.
-              </p>
+              <p className="muted small">{m.blockedHelp(blocked)}</p>
             )}
           </section>
 
           {data.scenarios.length > 0 && (
             <section className="panel">
-              <h3>Scenarios</h3>
-              <p className="muted small">A fixed series of steps against the clock. Uses your current bindings.</p>
+              <h3>{m.scenarios}</h3>
+              <p className="muted small">{m.scenariosHelp}</p>
               <ul className="scenario-list">
                 {data.scenarios.map((sc) => {
                   const rec = records[sc.id];
@@ -138,13 +136,14 @@ export function PluginPage({ plugin, platform, env }: Props) {
                   return (
                     <li key={sc.id}>
                       <a href={href({ name: 'scenario', pluginId: plugin.id, scenarioId: sc.id })}>
-                        <strong>{sc.name}</strong>
+                        <strong>{tr(sc.name)}</strong>
                         <span className="muted small">
-                          {steps} steps{rec ? ` · best ${formatMs(rec.bestMs)}` : ''}
-                          {rec?.bestCleanMs != null && rec.bestCleanMs !== rec.bestMs ? ` · clean ${formatMs(rec.bestCleanMs)}` : ''}
+                          {m.steps(steps)}
+                          {rec ? ` · ${m.best} ${formatMs(rec.bestMs)}` : ''}
+                          {rec?.bestCleanMs != null && rec.bestCleanMs !== rec.bestMs ? ` · ${m.clean} ${formatMs(rec.bestCleanMs)}` : ''}
                         </span>
                       </a>
-                      {sc.description && <p className="muted small">{sc.description}</p>}
+                      {sc.description && <p className="muted small">{tr(sc.description)}</p>}
                     </li>
                   );
                 })}
@@ -154,10 +153,10 @@ export function PluginPage({ plugin, platform, env }: Props) {
 
           {plugin.settings && plugin.settings.length > 0 && (
             <section className="panel">
-              <h3>Settings</h3>
+              <h3>{m.settings}</h3>
               {plugin.settings.map((s) => (
                 <label key={s.key} className="field">
-                  <span>{s.label}</span>
+                  <span>{tr(s.label)}</span>
                   {s.type === 'select' ? (
                     <select
                       value={data.settings[s.key]}
@@ -165,7 +164,7 @@ export function PluginPage({ plugin, platform, env }: Props) {
                     >
                       {s.options?.map((o) => (
                         <option key={o.value} value={o.value}>
-                          {o.label}
+                          {tr(o.label)}
                         </option>
                       ))}
                     </select>
@@ -175,7 +174,7 @@ export function PluginPage({ plugin, platform, env }: Props) {
                       onChange={(e) => data.setSettings({ ...data.settings, [s.key]: e.target.value })}
                     />
                   )}
-                  {s.description && <small className="muted">{s.description}</small>}
+                  {s.description && <small className="muted">{tr(s.description)}</small>}
                 </label>
               ))}
               {data.error && <p className="error">{data.error}</p>}
@@ -184,6 +183,7 @@ export function PluginPage({ plugin, platform, env }: Props) {
 
           {plugin.importers && plugin.importers.length > 0 && data.baseDef && (
             <ImportPanel
+              plugin={plugin}
               importers={plugin.importers}
               platform={platform}
               settings={data.settings}
@@ -195,10 +195,12 @@ export function PluginPage({ plugin, platform, env }: Props) {
         </div>
 
         <section className="panel">
-          <h3>Shortcuts ({data.shortcuts.length})</h3>
+          <h3>
+            {m.shortcuts} ({data.shortcuts.length})
+          </h3>
           {data.issues.length > 0 && (
             <details className="warnings">
-              <summary>{data.issues.length} issues in this pack</summary>
+              <summary>{m.packIssues(data.issues.length)}</summary>
               <ul>
                 {data.issues.map((i, n) => (
                   <li key={n}>
@@ -212,18 +214,18 @@ export function PluginPage({ plugin, platform, env }: Props) {
             <tbody>
               {data.shortcuts.map((s) => {
                 const card = data.progress[s.id];
-                const m = masteryOf(card);
+                const mastery = masteryOf(card);
                 return (
                   <tr key={s.id} className={data.isPracticable(s) ? '' : 'blocked'}>
                     <td>
-                      {s.action}
-                      {s.context && <span className="context">{s.context}</span>}
+                      {tr(s.action)}
+                      {s.context && <span className="context">{tr(s.context)}</span>}
                     </td>
                     <td>
                       <BindingsCaps bindings={s.bindings} platform={platform} />
                     </td>
                     <td className="nowrap">
-                      <span className={`badge ${m}`}>{MASTERY_LABEL[m]}</span>
+                      <span className={`badge ${mastery}`}>{m.mastery[mastery]}</span>
                       {card?.avgMs != null && <span className="muted small"> {(card.avgMs / 1000).toFixed(1)}s</span>}
                     </td>
                   </tr>

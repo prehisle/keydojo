@@ -9,6 +9,7 @@
 - **Speed runs.** Race the clock; great for StarCraft hotkeys.
 - **Scenarios.** Timed multi-step drills with splits and personal bests — e.g. StarCraft II build orders for all three races.
 - **Real key sequences.** Combos (`Ctrl+Shift+P`), chords (`Ctrl+K Ctrl+S`), prefix keys (`Ctrl+B %`), and rapid series (`B B`) are all first-class.
+- **English and Chinese.** The whole UI and every shortcut name, including StarCraft II names as in the zhCN client. Link with `?lang=zh` or `?lang=en`.
 - **Plugins are mostly data.** Adding an app is usually one file of shortcut definitions.
 
 ![Plugin page](docs/screenshot-plugin.png)

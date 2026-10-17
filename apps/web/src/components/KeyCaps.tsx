@@ -1,4 +1,5 @@
 import { sequenceId, strokeParts, type KeySequence, type KeyStroke, type Platform } from '@keydojo/core';
+import { useI18n } from '../i18n';
 
 export function StrokeCaps({ stroke, platform }: { stroke: KeyStroke; platform: Platform }) {
   return (
@@ -22,11 +23,12 @@ export function SequenceCaps({ sequence, platform }: { sequence: readonly KeyStr
 
 /** All bindings of a shortcut, separated by "or". */
 export function BindingsCaps({ bindings, platform }: { bindings: KeySequence[]; platform: Platform }) {
+  const { m } = useI18n();
   return (
     <span className="bindings">
       {bindings.map((b, i) => (
         <span key={i}>
-          {i > 0 && <span className="or">or</span>}
+          {i > 0 && <span className="or">{m.or}</span>}
           <SequenceCaps sequence={b} platform={platform} />
         </span>
       ))}

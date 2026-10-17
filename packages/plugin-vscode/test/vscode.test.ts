@@ -1,4 +1,4 @@
-import { compilePack, parseSequence, type Platform } from '@keydojo/core';
+import { compilePack, parseSequence, pluginTexts, type Platform } from '@keydojo/core';
 import { describe, expect, it } from 'vitest';
 import { humanizeCommand, importKeybindings, stripJsonc, vscodePlugin } from '../src';
 
@@ -60,5 +60,14 @@ describe('importKeybindings', () => {
 describe('humanizeCommand', () => {
   it('strips common prefixes and splits camelCase', () => {
     expect(humanizeCommand('editor.action.formatDocument')).toBe('Format Document');
+  });
+});
+
+describe('translations', () => {
+  it('has Chinese for every text the UI shows', () => {
+    const texts = pluginTexts(vscodePlugin, [{ platform: 'linux', settings: {} }]);
+    // Names and file formats stay as they are; bare supply counts like "12–13" need no translation.
+    const untranslated = [...texts].filter((t) => /[A-Za-z]/.test(t) && !['VS Code', 'keybindings.json'].includes(t) && !vscodePlugin.messages?.zh?.[t]);
+    expect(untranslated).toEqual([]);
   });
 });

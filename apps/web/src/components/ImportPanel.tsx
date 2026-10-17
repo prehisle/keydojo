@@ -1,8 +1,10 @@
-import type { ConfigImporter, Platform, SettingValues, ShortcutPackDef } from '@keydojo/core';
+import type { ConfigImporter, Platform, SettingValues, ShortcutPackDef, ShortcutPlugin } from '@keydojo/core';
 import { useState } from 'react';
+import { useI18n } from '../i18n';
 import type { ImportedPack } from '../storage';
 
 interface Props {
+  plugin: ShortcutPlugin;
   importers: ConfigImporter[];
   platform: Platform;
   settings: SettingValues;
@@ -11,14 +13,16 @@ interface Props {
   onImport(v: ImportedPack | null): void;
 }
 
-export function ImportPanel({ importers, platform, settings, baseDef, imported, onImport }: Props) {
+export function ImportPanel({ plugin, importers, platform, settings, baseDef, imported, onImport }: Props) {
+  const { m, p, locale } = useI18n();
+  const tr = (text: string) => p(plugin, text);
   const [importerId, setImporterId] = useState(importers[0]!.id);
   const [text, setText] = useState('');
   const [warnings, setWarnings] = useState<string[]>([]);
   const importer = importers.find((i) => i.id === importerId)!;
 
   const run = (content: string) => {
-    const result = importer.parse(content, { platform, settings, base: baseDef });
+    const result = importer.parse(content, { platform, settings, base: baseDef, locale });
     setWarnings(result.warnings);
     if (result.pack.shortcuts.length > 0) {
       onImport({ importerId, importedAt: Date.now(), pack: result.pack });
@@ -32,44 +36,43 @@ export function ImportPanel({ importers, platform, settings, baseDef, imported, 
 
   return (
     <section className="panel">
-      <h3>Use your own bindings</h3>
+      <h3>{m.useYourOwn}</h3>
       {imported ? (
         <p>
-          Using <strong>{imported.pack.name}</strong> ({imported.pack.shortcuts.length} shortcuts), imported{' '}
-          {new Date(imported.importedAt).toLocaleString()}.{' '}
+          {m.usingImported(tr(imported.pack.name), imported.pack.shortcuts.length, new Date(imported.importedAt).toLocaleString(locale))}{' '}
           <button className="link" onClick={() => onImport(null)}>
-            Revert to defaults
+            {m.revert}
           </button>
         </p>
       ) : (
-        <p className="muted">Currently using the built-in defaults.</p>
+        <p className="muted">{m.usingDefaults}</p>
       )}
 
       {importers.length > 1 && (
         <select value={importerId} onChange={(e) => setImporterId(e.target.value)}>
           {importers.map((i) => (
             <option key={i.id} value={i.id}>
-              {i.label}
+              {tr(i.label)}
             </option>
           ))}
         </select>
       )}
-      <p className="muted small">{importer.instructions}</p>
+      <p className="muted small">{tr(importer.instructions)}</p>
       <div className="row">
         <label className="button secondary">
-          Load file…
+          {m.loadFile}
           <input type="file" accept={importer.accept} hidden onChange={(e) => onFile(e.target.files?.[0])} />
         </label>
-        <span className="muted">or paste below</span>
+        <span className="muted">{m.orPaste}</span>
       </div>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={`Paste ${importer.label} contents here`}
+        placeholder={m.pastePlaceholder(tr(importer.label))}
         rows={5}
       />
       <button disabled={!text.trim()} onClick={() => run(text)}>
-        Import
+        {m.import}
       </button>
       {warnings.length > 0 && (
         <ul className="warnings">

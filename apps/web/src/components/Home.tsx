@@ -1,32 +1,32 @@
 import { masteryOf } from '@keydojo/core';
 import { plugins } from '../plugins';
+import { useI18n } from '../i18n';
 import { href } from '../router';
 import { store } from '../storage';
 
 export function Home() {
+  const { m, p } = useI18n();
   return (
     <div className="page">
       <section className="hero">
-        <h1>Train your shortcuts into muscle memory.</h1>
-        <p>
-          Pick an app, optionally import your own config, and drill with spaced repetition or against the clock.
-        </p>
+        <h1>{m.heroTitle}</h1>
+        <p>{m.heroText}</p>
       </section>
       <div className="plugin-grid">
-        {plugins.map((p) => {
-          const progress = store.progress(p.id);
+        {plugins.map((plugin) => {
+          const progress = store.progress(plugin.id);
           const learned = Object.values(progress).filter((c) => masteryOf(c) !== 'new').length;
           return (
-            <a key={p.id} className="plugin-card" href={href({ name: 'plugin', pluginId: p.id })}>
-              <h2>{p.name}</h2>
-              <p>{p.description}</p>
-              <span className="muted">{learned > 0 ? `${learned} shortcuts practised` : 'Not started'}</span>
+            <a key={plugin.id} className="plugin-card" href={href({ name: 'plugin', pluginId: plugin.id })}>
+              <h2>{p(plugin, plugin.name)}</h2>
+              <p>{p(plugin, plugin.description)}</p>
+              <span className="muted">{learned > 0 ? m.practised(learned) : m.notStarted}</span>
             </a>
           );
         })}
       </div>
       <p className="muted center">
-        Missing an app? Plugins are mostly data — see <code>CONTRIBUTING.md</code>.
+        {m.missingApp} <code>CONTRIBUTING.md</code>.
       </p>
     </div>
   );

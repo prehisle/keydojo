@@ -63,7 +63,23 @@ Keys are matched by **physical position** (`KeyboardEvent.code`), so drills work
 - **Settings** (`settings`) let users adapt the pack, like tmux's prefix key. They're passed to `buildPack`.
 - **Importers** (`importers`) turn the app's own config file into a pack, so users drill *their* bindings. See `plugin-vscode/src/keybindings-json.ts` and `plugin-tmux/src/list-keys.ts`.
 
-### 4. Test it
+### 4. Optional: translations
+
+The UI is in English and Chinese. Plugin text is translated when shown, using a table keyed by the English original — `action`, `context`, tags, notes, scenario names, setting labels:
+
+```ts
+import type { Messages } from '@keydojo/core';
+
+const zh: Messages = { 'Save the file': '保存文件', file: '文件' };
+
+export const myAppPlugin = definePlugin({ /* … */ messages: { zh } });
+```
+
+Missing entries fall back to English. Packs and progress are stored in English, so a user can switch language at any time. `pluginTexts(plugin, contexts)` lists every string the UI can show — the built-in plugins' tests use it to check the Chinese table is complete. Importer warnings are shown as is; write them in `ctx.locale`.
+
+UI text lives in `apps/web/src/i18n/en.ts` and `zh.ts`; the type checker rejects a `zh.ts` that is missing a key.
+
+### 5. Test it
 
 At minimum, assert the pack compiles cleanly on every platform — this catches typos and conflicting bindings:
 

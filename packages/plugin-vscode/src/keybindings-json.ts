@@ -4,6 +4,7 @@ import {
   parseSequence,
   sequenceToNotation,
   type ImportResult,
+  type Locale,
   type Platform,
   type ShortcutDef,
   type ShortcutPackDef,
@@ -65,7 +66,7 @@ export function humanizeCommand(command: string): string {
  * Apply a user keybindings.json on top of the default pack, following VSCode's rules:
  * entries add bindings, and `-command` entries remove them.
  */
-export function importKeybindings(text: string, base: ShortcutPackDef, platform: Platform): ImportResult {
+export function importKeybindings(text: string, base: ShortcutPackDef, platform: Platform, locale: Locale = 'en'): ImportResult {
   const warnings: string[] = [];
   let entries: unknown;
   try {
@@ -137,6 +138,10 @@ export function importKeybindings(text: string, base: ShortcutPackDef, platform:
   }
 
   const shortcuts = [...byCommand.values()].filter((d) => keysOf(d).length > 0);
-  warnings.unshift(`Applied ${added} bindings and ${removed} removals from keybindings.json`);
+  warnings.unshift(
+    locale === 'zh'
+      ? `已从 keybindings.json 应用 ${added} 个绑定和 ${removed} 个移除`
+      : `Applied ${added} bindings and ${removed} removals from keybindings.json`,
+  );
   return { pack: { id: base.id, name: `${base.name} + keybindings.json`, shortcuts }, warnings };
 }

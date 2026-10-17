@@ -1,4 +1,4 @@
-import { KeyParseError, sequenceToNotation, type ImportResult, type KeyStroke, type ShortcutDef } from '@keydojo/core';
+import { KeyParseError, sequenceToNotation, type ImportResult, type KeyStroke, type Locale, type ShortcutDef } from '@keydojo/core';
 import { DEFAULT_BINDINGS } from './defaults';
 import { parseTmuxKey } from './tmux-keys';
 
@@ -153,6 +153,8 @@ export interface ListKeysOptions {
   prefix: KeyStroke;
   /** Which copy-mode table to keep; the other one is noise for the user. */
   copyTable: 'copy-mode' | 'copy-mode-vi';
+  /** Language of the warnings. */
+  locale?: Locale;
 }
 
 /** Parse the output of `tmux list-keys` into shortcut definitions. */
@@ -228,9 +230,11 @@ export function parseListKeys(text: string, opts: ListKeysOptions): ImportResult
     });
   }
 
-  if (skippedMouse) warnings.push(`Skipped ${skippedMouse} mouse bindings`);
-  if (skippedTables) warnings.push(`Skipped ${skippedTables} bindings from other key tables`);
-  if (shortcuts.length === 0) warnings.push('No key bindings found — paste the full output of `tmux list-keys`.');
+  const zh = opts.locale === 'zh';
+  if (skippedMouse) warnings.push(zh ? `跳过了 ${skippedMouse} 个鼠标绑定` : `Skipped ${skippedMouse} mouse bindings`);
+  if (skippedTables) warnings.push(zh ? `跳过了 ${skippedTables} 个其他键表中的绑定` : `Skipped ${skippedTables} bindings from other key tables`);
+  if (shortcuts.length === 0)
+    warnings.push(zh ? '没有找到键绑定，请粘贴 `tmux list-keys` 的完整输出。' : 'No key bindings found — paste the full output of `tmux list-keys`.');
 
   return { pack: { id: 'tmux', name: 'tmux (imported)', shortcuts }, warnings, suggestedPrefix };
 }

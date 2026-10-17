@@ -1,4 +1,4 @@
-import type { DrillMode, Platform, ProgressMap, ScenarioRecord, SettingValues, ShortcutPackDef } from '@keydojo/core';
+import type { DrillMode, Locale, Platform, ProgressMap, ScenarioRecord, SettingValues, ShortcutPackDef } from '@keydojo/core';
 
 /**
  * Persistence. Everything goes through `kv` so the desktop build can swap localStorage
@@ -50,6 +50,9 @@ export const DEFAULT_DRILL_PREFS: DrillPrefs = { mode: 'smart', size: 20, tags: 
 export const store = {
   platform: () => read<Platform | null>('platform', null),
   setPlatform: (p: Platform) => write('platform', p),
+
+  locale: () => read<Locale | null>('locale', null),
+  setLocale: (l: Locale) => write('locale', l),
 
   settings: (pluginId: string) => read<SettingValues>(`settings:${pluginId}`, {}),
   setSettings: (pluginId: string, v: SettingValues) => write(`settings:${pluginId}`, v),

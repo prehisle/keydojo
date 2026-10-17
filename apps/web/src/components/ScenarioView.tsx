@@ -12,6 +12,7 @@ import {
   type ShortcutPlugin,
 } from '@keydojo/core';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useI18n } from '../i18n';
 import { href } from '../router';
 import { store } from '../storage';
 import { usePluginData } from '../usePluginData';
@@ -37,6 +38,8 @@ export function ScenarioView(props: Props) {
 }
 
 function Scenario({ plugin, scenarioId, platform, env, onRestart }: Props & { onRestart(): void }) {
+  const { m, p } = useI18n();
+  const tr = (text: string) => p(plugin, text);
   const data = usePluginData(plugin, platform, env);
   const def = data.scenarios.find((s) => s.id === scenarioId);
   const [resolved] = useState(() => (def ? resolveScenario(def, data.shortcuts) : null));
@@ -44,15 +47,15 @@ function Scenario({ plugin, scenarioId, platform, env, onRestart }: Props & { on
 
   const back = (
     <a href={href({ name: 'plugin', pluginId: plugin.id })} className="muted">
-      ← {plugin.name}
+      ← {tr(plugin.name)}
     </a>
   );
 
   if (!def || !resolved || resolved.steps.length === 0) {
     return (
       <div className="page center">
-        <h2>Scenario not available</h2>
-        <p className="muted">It may belong to another setting (e.g. another race).</p>
+        <h2>{m.scenarioUnavailable}</h2>
+        <p className="muted">{m.scenarioUnavailableHelp}</p>
         {back}
       </div>
     );
@@ -60,11 +63,10 @@ function Scenario({ plugin, scenarioId, platform, env, onRestart }: Props & { on
   if (blocked.length > 0) {
     return (
       <div className="page center">
-        <h2>{def.name}</h2>
+        <h2>{tr(def.name)}</h2>
         <p className="error">
-          {blocked.length} step{blocked.length > 1 ? 's use' : ' uses'} keys the browser reserves (e.g.{' '}
-          <BindingsCaps bindings={blocked[0]!.shortcut.bindings} platform={platform} />
-          ). Use fullscreen mode (top right) or the desktop app.
+          {m.blockedSteps(blocked.length)} <BindingsCaps bindings={blocked[0]!.shortcut.bindings} platform={platform} />.{' '}
+          {m.blockedStepsHelp}
         </p>
         {back}
       </div>
@@ -72,9 +74,9 @@ function Scenario({ plugin, scenarioId, platform, env, onRestart }: Props & { on
   }
   return (
     <Runner
-      pluginId={plugin.id}
+      plugin={plugin}
       scenarioId={def.id}
-      name={def.name}
+      name={tr(def.name)}
       steps={resolved.steps}
       missing={resolved.missing}
       platform={platform}
@@ -85,7 +87,7 @@ function Scenario({ plugin, scenarioId, platform, env, onRestart }: Props & { on
 }
 
 interface RunnerProps {
-  pluginId: string;
+  plugin: ShortcutPlugin;
   scenarioId: string;
   name: string;
   steps: ScenarioStep[];
@@ -97,7 +99,10 @@ interface RunnerProps {
 
 type Phase = 'answer' | 'reveal';
 
-function Runner({ pluginId, scenarioId, name, steps, missing, platform, back, onRestart }: RunnerProps) {
+function Runner({ plugin, scenarioId, name, steps, missing, platform, back, onRestart }: RunnerProps) {
+  const { m, p } = useI18n();
+  const tr = (text: string) => p(plugin, text);
+  const pluginId = plugin.id;
   const [run] = useState(() => new ScenarioRun(steps, () => performance.now()));
   const [, setTick] = useState(0);
   const rerender = () => setTick((n) => n + 1);
@@ -156,6 +161,7 @@ function Runner({ pluginId, scenarioId, name, steps, missing, platform, back, on
   if (finished) {
     return (
       <ScenarioSummary
+        plugin={plugin}
         name={name}
         steps={steps}
         missed={run.missedSteps}
@@ -188,19 +194,19 @@ function Runner({ pluginId, scenarioId, name, steps, missing, platform, back, on
       <div className="scenario-clock">
         <strong>{formatMs(run.elapsedMs())}</strong>
         <span className={run.mistakes > 0 ? 'bad' : 'muted'}>
-          {run.mistakes} mistake{run.mistakes === 1 ? '' : 's'}
+          {m.mistakes(run.mistakes)}
         </span>
       </div>
 
       <div className={`prompt ${phase}`}>
-        {step.shortcut.context && <div className="context big">{step.shortcut.context}</div>}
-        <h1>{step.shortcut.action}</h1>
-        {step.note && <p className="muted">{step.note}</p>}
+        {step.shortcut.context && <div className="context big">{tr(step.shortcut.context)}</div>}
+        <h1>{tr(step.shortcut.action)}</h1>
+        {step.note && <p className="muted">{tr(step.note)}</p>}
         <div className="typed" key={shake}>
           {typed.length > 0 ? (
             <SequenceCaps sequence={typed} platform={platform} />
           ) : (
-            <span className="muted">{run.started ? '…' : 'press the first key to start the clock'}</span>
+            <span className="muted">{run.started ? '…' : m.pressToStart}</span>
           )}
         </div>
         {(phase === 'reveal' || showKeys) && (
@@ -217,25 +223,22 @@ function Runner({ pluginId, scenarioId, name, steps, missing, platform, back, on
           return (
             <li key={n} className={cls}>
               <span>
-                {s.shortcut.action}
-                {s.shortcut.context && <span className="context">{s.shortcut.context}</span>}
+                {tr(s.shortcut.action)}
+                {s.shortcut.context && <span className="context">{tr(s.shortcut.context)}</span>}
               </span>
-              {s.note && <span className="muted small">{s.note}</span>}
+              {s.note && <span className="muted small">{tr(s.note)}</span>}
             </li>
           );
         })}
       </ol>
 
-      {imeWarning && <p className="error center">An input method (IME) is active — switch to English input.</p>}
+      {imeWarning && <p className="error center">{m.imeActive}</p>}
       {missing.length > 0 && (
-        <p className="muted small center">
-          {missing.length} step{missing.length > 1 ? 's are' : ' is'} missing from your bindings and skipped.
-        </p>
+        <p className="muted small center">{m.missingSteps(missing.length)}</p>
       )}
       {!run.started && (
         <label className="center small muted show-keys">
-          <input type="checkbox" checked={showKeys} onChange={(e) => setShowKeys(e.target.checked)} /> Show keys
-          (practice run, not recorded)
+          <input type="checkbox" checked={showKeys} onChange={(e) => setShowKeys(e.target.checked)} /> {m.showKeys}
         </label>
       )}
     </div>
@@ -243,6 +246,7 @@ function Runner({ pluginId, scenarioId, name, steps, missing, platform, back, on
 }
 
 interface SummaryProps {
+  plugin: ShortcutPlugin;
   name: string;
   steps: ScenarioStep[];
   missed: ReadonlySet<number>;
@@ -254,7 +258,9 @@ interface SummaryProps {
   onRestart(): void;
 }
 
-function ScenarioSummary({ name, steps, missed, result, prev, recorded, platform, back, onRestart }: SummaryProps) {
+function ScenarioSummary({ plugin, name, steps, missed, result, prev, recorded, platform, back, onRestart }: SummaryProps) {
+  const { m, p } = useI18n();
+  const tr = (text: string) => p(plugin, text);
   const newBest = recorded && (!prev || result.totalMs < prev.bestMs);
   const slowest = Math.max(...result.splits);
   const best = recorded ? Math.min(prev?.bestMs ?? Infinity, result.totalMs) : prev?.bestMs;
@@ -263,31 +269,31 @@ function ScenarioSummary({ name, steps, missed, result, prev, recorded, platform
     <div className="page summary">
       <div className="drill-top">{back}</div>
       <h1>{name}</h1>
-      {newBest && prev && <p className="good">New personal best — {formatMs(prev.bestMs - result.totalMs)} faster!</p>}
-      {!recorded && <p className="muted">Practice run with keys shown — not recorded.</p>}
+      {newBest && prev && <p className="good">{m.newBest(formatMs(prev.bestMs - result.totalMs))}</p>}
+      {!recorded && <p className="muted">{m.practiceRun}</p>}
       <div className="stats">
         <div>
           <strong>{formatMs(result.totalMs)}</strong>
-          <span>time</span>
+          <span>{m.time}</span>
         </div>
         <div>
           <strong>{result.mistakes}</strong>
-          <span>mistakes</span>
+          <span>{m.mistakesLabel}</span>
         </div>
         <div>
           <strong>{best === undefined ? '—' : formatMs(best)}</strong>
-          <span>best</span>
+          <span>{m.best}</span>
         </div>
       </div>
       <section className="panel">
-        <h3>Splits</h3>
+        <h3>{m.splits}</h3>
         <table className="shortcut-table">
           <tbody>
             {steps.map((s, i) => (
               <tr key={i} className={missed.has(i) ? 'missed' : ''}>
                 <td>
-                  {s.shortcut.action}
-                  {s.shortcut.context && <span className="context">{s.shortcut.context}</span>}
+                  {tr(s.shortcut.action)}
+                  {s.shortcut.context && <span className="context">{tr(s.shortcut.context)}</span>}
                 </td>
                 <td>
                   <BindingsCaps bindings={s.shortcut.bindings} platform={platform} />
@@ -300,7 +306,7 @@ function ScenarioSummary({ name, steps, missed, result, prev, recorded, platform
       </section>
       <div className="row center">
         <button className="primary" onClick={onRestart} autoFocus>
-          Again
+          {m.again}
         </button>
       </div>
     </div>

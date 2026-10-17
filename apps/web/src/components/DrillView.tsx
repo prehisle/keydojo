@@ -10,6 +10,7 @@ import {
   type ShortcutPlugin,
 } from '@keydojo/core';
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from '../i18n';
 import { href } from '../router';
 import { store } from '../storage';
 import { usePluginData } from '../usePluginData';
@@ -34,6 +35,8 @@ export function DrillView(props: Props) {
 }
 
 function Drill({ plugin, platform, env, onRestart }: Props & { onRestart(): void }) {
+  const { m, p } = useI18n();
+  const tr = (text: string) => p(plugin, text);
   const data = usePluginData(plugin, platform, env);
   const prefs = store.drillPrefs(plugin.id);
 
@@ -133,7 +136,7 @@ function Drill({ plugin, platform, env, onRestart }: Props & { onRestart(): void
   }, []);
 
   if (phase === 'done' || !item) {
-    return <Summary session={session} shortcuts={data.shortcuts} platform={platform} pluginId={plugin.id} onRestart={onRestart} />;
+    return <Summary session={session} shortcuts={data.shortcuts} platform={platform} plugin={plugin} onRestart={onRestart} />;
   }
 
   const answered = session.summary().total;
@@ -144,7 +147,7 @@ function Drill({ plugin, platform, env, onRestart }: Props & { onRestart(): void
     <div className="drill">
       <div className="drill-top">
         <a href={href({ name: 'plugin', pluginId: plugin.id })} className="muted">
-          ← {plugin.name}
+          ← {tr(plugin.name)}
         </a>
         <span className="muted">
           {answered} / {planned}
@@ -155,8 +158,8 @@ function Drill({ plugin, platform, env, onRestart }: Props & { onRestart(): void
       </div>
 
       <div className={`prompt ${phase}`}>
-        {item.context && <div className="context big">{item.context}</div>}
-        <h1>{item.action}</h1>
+        {item.context && <div className="context big">{tr(item.context)}</div>}
+        <h1>{tr(item.action)}</h1>
         {prefs.mode === 'speed' && phase === 'answer' && (
           <div className="timer" key={item.id + answered}>
             <div style={{ animationDuration: `${targetMsFor(strokes)}ms` }} />
@@ -164,24 +167,24 @@ function Drill({ plugin, platform, env, onRestart }: Props & { onRestart(): void
         )}
 
         <div className="typed" key={shake}>
-          {typed.length > 0 ? <SequenceCaps sequence={typed} platform={platform} /> : <span className="muted">press the shortcut…</span>}
+          {typed.length > 0 ? <SequenceCaps sequence={typed} platform={platform} /> : <span className="muted">{m.pressShortcut}</span>}
         </div>
 
         {phase === 'reveal' && (
           <div className="reveal">
             <BindingsCaps bindings={item.bindings} platform={platform} />
-            {prefs.mode === 'smart' && <p className="muted small">Type it once to continue.</p>}
+            {prefs.mode === 'smart' && <p className="muted small">{m.typeToContinue}</p>}
           </div>
         )}
-        {item.note && phase !== 'answer' && <p className="muted small">{item.note}</p>}
+        {item.note && phase !== 'answer' && <p className="muted small">{tr(item.note)}</p>}
       </div>
 
-      {imeWarning && <p className="error center">An input method (IME) is active — switch to English input.</p>}
+      {imeWarning && <p className="error center">{m.imeActive}</p>}
 
       {phase === 'answer' && (
         <div className="center">
           <button className="link" onClick={fail}>
-            I don't know
+            {m.dontKnow}
           </button>
         </div>
       )}
@@ -193,21 +196,24 @@ interface SummaryProps {
   session: DrillSession;
   shortcuts: Shortcut[];
   platform: Platform;
-  pluginId: string;
+  plugin: ShortcutPlugin;
   onRestart(): void;
 }
 
-function Summary({ session, shortcuts, platform, pluginId, onRestart }: SummaryProps) {
+function Summary({ session, shortcuts, platform, plugin, onRestart }: SummaryProps) {
+  const { m, p } = useI18n();
+  const tr = (text: string) => p(plugin, text);
+  const pluginId = plugin.id;
   const s = session.summary();
   const missed = s.missed.map((id) => shortcuts.find((x) => x.id === id)).filter((x): x is Shortcut => !!x);
 
   if (s.total === 0) {
     return (
       <div className="page center">
-        <h2>Nothing to practise</h2>
-        <p className="muted">Try other topics or a higher difficulty.</p>
+        <h2>{m.nothingToPractise}</h2>
+        <p className="muted">{m.nothingHelp}</p>
         <a className="button" href={href({ name: 'plugin', pluginId })}>
-          Back
+          {m.back}
         </a>
       </div>
     );
@@ -215,36 +221,36 @@ function Summary({ session, shortcuts, platform, pluginId, onRestart }: SummaryP
 
   return (
     <div className="page summary">
-      <h1>Session complete</h1>
+      <h1>{m.sessionComplete}</h1>
       <div className="stats">
         <div>
           <strong>{Math.round(s.accuracy * 100)}%</strong>
-          <span>accuracy</span>
+          <span>{m.accuracy}</span>
         </div>
         <div>
           <strong>{s.avgMs === null ? '—' : `${(s.avgMs / 1000).toFixed(2)}s`}</strong>
-          <span>avg. time</span>
+          <span>{m.avgTime}</span>
         </div>
         <div>
           <strong>
             {s.correct}/{s.total}
           </strong>
-          <span>correct</span>
+          <span>{m.correct}</span>
         </div>
       </div>
       {missed.length > 0 && (
         <section className="panel">
-          <h3>Review these</h3>
+          <h3>{m.reviewThese}</h3>
           <table className="shortcut-table">
             <tbody>
-              {missed.map((m) => (
-                <tr key={m.id}>
+              {missed.map((s) => (
+                <tr key={s.id}>
                   <td>
-                    {m.action}
-                    {m.context && <span className="context">{m.context}</span>}
+                    {tr(s.action)}
+                    {s.context && <span className="context">{tr(s.context)}</span>}
                   </td>
                   <td>
-                    <BindingsCaps bindings={m.bindings} platform={platform} />
+                    <BindingsCaps bindings={s.bindings} platform={platform} />
                   </td>
                 </tr>
               ))}
@@ -254,10 +260,10 @@ function Summary({ session, shortcuts, platform, pluginId, onRestart }: SummaryP
       )}
       <div className="row center">
         <button className="primary" onClick={onRestart}>
-          Again
+          {m.again}
         </button>
         <a className="button secondary" href={href({ name: 'plugin', pluginId })}>
-          Back
+          {m.back}
         </a>
       </div>
     </div>

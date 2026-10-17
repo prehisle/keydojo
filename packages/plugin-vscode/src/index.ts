@@ -1,6 +1,7 @@
 import { definePlugin } from '@keydojo/core';
 import { DEFAULT_SHORTCUTS } from './defaults';
 import { importKeybindings } from './keybindings-json';
+import { zh } from './messages.zh';
 
 export { importKeybindings, stripJsonc, vscodeKeyToNotation, humanizeCommand } from './keybindings-json';
 
@@ -12,6 +13,7 @@ export const vscodePlugin = definePlugin({
   name: 'VS Code',
   description: 'Editing, navigation, multi-cursor and debugging shortcuts for Visual Studio Code.',
   homepage: 'https://code.visualstudio.com/docs/getstarted/keybindings',
+  messages: { zh },
 
   buildPack() {
     return { id: 'vscode', name: 'VS Code defaults', shortcuts: DEFAULT_SHORTCUTS };
@@ -23,8 +25,8 @@ export const vscodePlugin = definePlugin({
       label: 'keybindings.json',
       instructions: `Load your keybindings.json (Command Palette → "Preferences: Open Keyboard Shortcuts (JSON)"). It is merged onto the defaults. ${KEYBINDINGS_PATHS}`,
       accept: '.json',
-      parse(text, { base, platform }) {
-        return importKeybindings(text, base, platform);
+      parse(text, { base, platform, locale }) {
+        return importKeybindings(text, base, platform, locale);
       },
     },
   ],

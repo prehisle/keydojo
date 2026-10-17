@@ -2,6 +2,7 @@ import { definePlugin, sequenceToNotation, type ShortcutDef } from '@keydojo/cor
 import { DEFAULT_BINDINGS } from './defaults';
 import { parseListKeys } from './list-keys';
 import { parseTmuxKey } from './tmux-keys';
+import { zh } from './messages.zh';
 
 export { parseTmuxKey } from './tmux-keys';
 export { parseListKeys, describeCommand, tokenize } from './list-keys';
@@ -11,6 +12,7 @@ export const tmuxPlugin = definePlugin({
   name: 'tmux',
   description: 'Terminal multiplexer: prefix-key bindings for sessions, windows, panes and copy mode.',
   homepage: 'https://github.com/tmux/tmux',
+  messages: { zh },
   settings: [
     {
       key: 'prefix',
@@ -57,13 +59,15 @@ export const tmuxPlugin = definePlugin({
       instructions:
         'Run `tmux list-keys > tmux-keys.txt` inside tmux and load the file (or paste its contents). Set your prefix above first.',
       accept: '.txt,.conf',
-      parse(text, { settings }) {
+      parse(text, { settings, locale }) {
         const prefix = parseTmuxKey(settings.prefix || 'C-b');
         const copyTable = settings.modeKeys === 'vi' ? 'copy-mode-vi' : 'copy-mode';
-        const { suggestedPrefix, ...result } = parseListKeys(text, { prefix, copyTable });
+        const { suggestedPrefix, ...result } = parseListKeys(text, { prefix, copyTable, locale });
         if (suggestedPrefix && suggestedPrefix !== (settings.prefix || 'C-b')) {
           result.warnings.unshift(
-            `Your config binds \`${suggestedPrefix} send-prefix\` — your prefix is probably ${suggestedPrefix}. Update the prefix setting and import again.`,
+            locale === 'zh'
+              ? `你的配置绑定了 \`${suggestedPrefix} send-prefix\`，前缀键很可能是 ${suggestedPrefix}。请修改前缀键设置后重新导入。`
+              : `Your config binds \`${suggestedPrefix} send-prefix\` — your prefix is probably ${suggestedPrefix}. Update the prefix setting and import again.`,
           );
         }
         return result;

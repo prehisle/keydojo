@@ -1,4 +1,4 @@
-import { compilePack, parseSequence, resolveScenario, type ShortcutPackDef } from '@keydojo/core';
+import { compilePack, parseSequence, pluginTexts, resolveScenario, type ShortcutPackDef } from '@keydojo/core';
 import { describe, expect, it } from 'vitest';
 import { buildSc2Pack, parseHotkeysFile, sc2KeyToNotation, sc2Plugin, sc2ValueToNotations, type Layout, type Race } from '../src';
 
@@ -103,10 +103,10 @@ SupplyDepot=T
     const importer = sc2Plugin.importers![0]!;
     const settings = { race: 'terran', layout: 'grid' };
     const base = sc2Plugin.buildPack({ platform: 'windows', settings });
-    const result = importer.parse(file, { platform: 'windows', settings, base });
+    const result = importer.parse(file, { platform: 'windows', settings, base, locale: 'en' });
     expect(result.warnings[0]).toMatch(/Applied 5 custom hotkeys on top of Grid/);
     expect(keysOf(result.pack, 'terran.barracks.reaper')).toEqual(seq('W'));
-    expect(importer.parse('hello', { platform: 'windows', settings, base }).pack.shortcuts).toEqual([]);
+    expect(importer.parse('hello', { platform: 'windows', settings, base, locale: 'en' }).pack.shortcuts).toEqual([]);
   });
 });
 
@@ -121,5 +121,16 @@ describe('build orders', () => {
       expect(missing, s.id).toEqual([]);
       expect(steps.length).toBeGreaterThanOrEqual(10);
     }
+  });
+});
+
+describe('translations', () => {
+  it('has Chinese for every text the UI shows', () => {
+    const texts = pluginTexts(sc2Plugin, (['terran', 'protoss', 'zerg'] as Race[]).flatMap((race) =>
+      (['standard', 'grid'] as Layout[]).map((layout) => ({ platform: 'windows' as const, settings: { race, layout } })),
+    ));
+    // Names and file formats stay as they are; bare supply counts like "12–13" need no translation.
+    const untranslated = [...texts].filter((t) => /[A-Za-z]/.test(t) && !sc2Plugin.messages?.zh?.[t]);
+    expect(untranslated).toEqual([]);
   });
 });

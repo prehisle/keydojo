@@ -1,4 +1,4 @@
-import { compilePack, defaultSettings, formatSequence, parseSequence, stroke } from '@keydojo/core';
+import { compilePack, defaultSettings, formatSequence, parseSequence, pluginTexts, stroke } from '@keydojo/core';
 import { describe, expect, it } from 'vitest';
 import { parseListKeys, parseTmuxKey, tmuxPlugin, tokenize } from '../src';
 
@@ -84,5 +84,14 @@ describe('parseListKeys', () => {
 
   it('produces a pack that compiles cleanly', () => {
     expect(compilePack(result.pack, 'linux').issues).toEqual([]);
+  });
+});
+
+describe('translations', () => {
+  it('has Chinese for every text the UI shows', () => {
+    const texts = pluginTexts(tmuxPlugin, ['vi', 'emacs'].map((modeKeys) => ({ platform: 'linux' as const, settings: { prefix: 'C-b', modeKeys } })));
+    // Names and file formats stay as they are; bare supply counts like "12–13" need no translation.
+    const untranslated = [...texts].filter((t) => /[A-Za-z]/.test(t) && !['tmux', 'tmux list-keys'].includes(t) && !tmuxPlugin.messages?.zh?.[t]);
+    expect(untranslated).toEqual([]);
   });
 });
